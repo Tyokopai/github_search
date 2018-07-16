@@ -12,20 +12,25 @@ export default class App extends Component<Props> {
 
   state = {
     items: [],
+    refreshing: false,
   }
 
   initPage = 0;
 
-  fetchRepositories(query='react') {
+  fetchRepositories(query='react', refreshing = false) {
 
-    const newPage = this.initPage + 1;
+    const newPage = refreshing ? true : this.initPage + 1;
     
     fetch(`https://api.github.com/search/repositories?q=${query}&page=${newPage}`)
       .then(response => response.json())
       .then(({items}) => {
         this.initPage = newPage;
-        // 以前のページの検索結果を連結
-        this.setState({items: [...this.state.items, ...items]});
+        if (this.refreshing) {
+          this.setState({items: items, refreshing : false});
+        } else {
+          // 以前のページの検索結果を連結
+          this.setState({items: [...this.state.items, ...items], refreshing: false});
+        }
       });
   }
 
@@ -41,6 +46,8 @@ export default class App extends Component<Props> {
           keyExtractor={(item) => item.id.toString()}
           onEndReached={() => this.fetchRepositories()}
           onEndReachedThreshold={0.1}
+          onRefresh={() => {this.fetchRepositories(true)}}
+          refreshing={this.state.refreshing}
         />
       </View>
     );
