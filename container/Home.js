@@ -7,6 +7,7 @@ import {
   FlatList,
   TextInput,
   Image,
+  AppState,
 } from 'react-native';
 
 type Props = {};
@@ -39,6 +40,21 @@ export default class App extends React.Component<Props> {
 
   navigationDetail(item) {
     this.props.navigation.navigate('Detail', { item });
+  }
+
+  componentDidMount() {
+    AppState.addEventListener('change', this.onChangeState);
+  }
+
+  componentWillMount() {
+    AppState.removeEventListener('change', this.onChangeState);
+  }
+
+  // thisを束縛するためにアロー関数を使用
+  onChangeState = (appState) => {
+    if (appState === 'active') {
+      this.fetchRepositories(true);
+    }
   }
 
   render() {
